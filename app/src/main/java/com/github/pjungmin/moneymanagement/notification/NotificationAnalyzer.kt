@@ -1,6 +1,7 @@
 package com.github.pjungmin.moneymanagement.notification
 
 import android.app.Notification
+import com.github.pjungmin.moneymanagement.data.NotificationAnalyzeResult
 import java.util.*
 
 interface NotificationAnalyzer {
@@ -14,7 +15,6 @@ interface NotificationAnalyzer {
         }
     }
 
-    data class NotificationAnalyzeResult(val type: TransactionType?, val value: Int?, val date: Date, val from: String)
     enum class TransactionType{
         DEPOSIT, WITHDRAW;
 

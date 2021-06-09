@@ -21,6 +21,6 @@ class FirstActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if(isPermissionAllowed(this, packageName)) binding.textView.text = "권한 허용 확인됨! ㅎㅎ"
+        if(isPermissionAllowed(this, packageName)) binding.textView.text = "권한 허용 확인됨"
     }
 }

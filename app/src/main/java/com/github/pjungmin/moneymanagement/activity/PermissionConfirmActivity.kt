@@ -28,11 +28,11 @@ class PermissionConfirmActivity : AppCompatActivity() {
         if(isPermissionAllowed(this, packageName)) finish()
     }
 
-    override fun onBackPressed() {
-        if(!isPermissionAllowed(this, packageName)) {
-            moveTaskToBack(true)
-            finishAndRemoveTask()
-            Process.killProcess(Process.myPid())
-        }
-    }
+//    override fun onBackPressed() {
+//        if(!isPermissionAllowed(this, packageName)) {
+//            moveTaskToBack(true)
+//            finishAndRemoveTask()
+//            Process.killProcess(Process.myPid())
+//        }
+//    }
 }

@@ -1,22 +1,16 @@
 package com.github.pjungmin.moneymanagement.notification
 
 import android.app.Notification
-import android.content.SharedPreferences
-import android.os.Bundle
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.text.TextUtils
-import com.github.pjungmin.moneymanagement.notification.NotificationAnalyzer.NotificationAnalyzeResult
-import com.github.pjungmin.moneymanagement.notification.NotificationAnalyzer.TransactionType
-import com.github.pjungmin.moneymanagement.notification.NotificationAnalyzer.TransactionType.DEPOSIT
-import com.github.pjungmin.moneymanagement.notification.NotificationAnalyzer.TransactionType.WITHDRAW
+import com.github.pjungmin.moneymanagement.data.NotificationAnalyzeResult
 import com.github.pjungmin.moneymanagement.util.DATA_KEY
 import com.github.pjungmin.moneymanagement.util.PREF_NAME
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.function.Consumer
 import kotlin.collections.HashMap
 
 class NotificationListener : NotificationListenerService() {
@@ -39,6 +33,23 @@ class NotificationListener : NotificationListenerService() {
                 )
             }
         }
+        val pref = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
+        val editor = pref.edit()
+        val data = pref.getStringSet(DATA_KEY, LinkedHashSet<String>())
+        for(i in 1..10) {
+            data?.add(gson.toJson(NotificationAnalyzeResult(
+                when(Random().nextInt(2)) {
+                    1 -> NotificationAnalyzer.TransactionType.DEPOSIT
+                    else -> NotificationAnalyzer.TransactionType.WITHDRAW
+                },
+                Random().nextInt(100000),
+                Date(System.currentTimeMillis() - Random().nextInt(60000*24*365)),
+                "테스트$i"
+            )))
+        }
+        println(data)
+        editor.putStringSet(DATA_KEY, data)
+        editor.commit()
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {

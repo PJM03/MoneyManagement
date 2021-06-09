@@ -2,6 +2,7 @@ package com.github.pjungmin.moneymanagement.activity
 
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Process
 import android.view.LayoutInflater
@@ -13,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.animation.Easing.EasingOption.EaseInOutBack
+import com.github.mikephil.charting.charts.Chart
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
@@ -66,7 +68,7 @@ class MainScreenActivity : AppCompatActivity() {
         edit.commit()
     }
 
-    fun setTotalValues(dataList: List<NotificationAnalyzeResult>) {
+    private fun setTotalValues(dataList: List<NotificationAnalyzeResult>) {
         val incomeTotal = dataList.filter { it.type == DEPOSIT }.sumBy { it.value!! }
         val spendingTotal = dataList.filter { it.type == WITHDRAW }.sumBy { it.value!! }
 
@@ -85,23 +87,30 @@ class MainScreenActivity : AppCompatActivity() {
         val chartData = dataList.filter{it.type == WITHDRAW}.groupBy{pref.getString(MAPPER_PREFIX + it.from, it.from)}.map {
             PieEntry(it.value.sumBy{ s -> s.value!! }.toFloat(), it.key)
         }.sortedBy { it.value }
-        val spendingTop = chartData.slice(0..4).toMutableList()
+        if(chartData.size >= 5) {
+            val spendingTop = chartData.slice(0..4).toMutableList()
 //        val etc = chartData.slice(5 until chartData.size).sumBy{ it.value.toInt() }
 //        spendingTop.add(PieEntry(etc.toFloat(), "기타"))
-        val pieData = PieData(PieDataSet(spendingTop, "").apply {
-            colors = VORDIPLOM_COLORS.toList().shuffled()
-            valueTextColor = ContextCompat.getColor(this@MainScreenActivity, R.color.main)
-            valueTextSize = 16f
-        })
-        binding.pieChart.apply {
-            data = pieData
-            description.isEnabled = false
-            isRotationEnabled = false
-            legend.isEnabled = false
-            setHoleColor(Color.TRANSPARENT)
-            setEntryLabelColor(Color.BLACK)
-            animateY(700, EaseInOutBack)
-            animate()
+            val pieData = PieData(PieDataSet(spendingTop, "").apply {
+                colors = VORDIPLOM_COLORS.toList().shuffled()
+                valueTextColor = ContextCompat.getColor(this@MainScreenActivity, R.color.main)
+                valueTextSize = 16f
+            })
+            binding.pieChart.apply {
+                data = pieData
+                description.isEnabled = false
+                isRotationEnabled = false
+                legend.isEnabled = false
+                setHoleColor(Color.TRANSPARENT)
+                setEntryLabelColor(Color.BLACK)
+                animateY(700, EaseInOutBack)
+                animate()
+//                don't work
+//                setNoDataText("데이터가 존재하지 않습니다.")
+//                setNoDataTextColor(ContextCompat.getColor(this@MainScreenActivity, R.color.main))
+//                setNoDataTextTypeface(Typeface.createFromAsset(assets, "font/elicedigitalbaeum_regular.ttf"))
+//                invalidate()
+            }
         }
     }
 

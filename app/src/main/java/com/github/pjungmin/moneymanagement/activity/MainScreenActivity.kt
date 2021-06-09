@@ -1,5 +1,6 @@
 package com.github.pjungmin.moneymanagement.activity
 
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Process
@@ -12,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.animation.Easing.EasingOption.EaseInOutBack
+import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
@@ -49,35 +51,45 @@ class MainScreenActivity : AppCompatActivity() {
         val dataSet = pref.getStringSet(DATA_KEY, LinkedHashSet())!!.map{ gson.fromJson(it, NotificationAnalyzeResult::class.java) }
         val dataList = dataSet.sortedBy { it.date }.reversed()
 
-        /*Test*/
-//        val edit = pref.edit()
-//        for(i in 1 until 10 step 2) {
-//            edit.putString(MAPPER_PREFIX + "테스트$i", "테스트" + (i+1))
-//        }
-//        edit.commit()
-        /*Test*/
+//        testMapper(pref)
 
+        setTotalValues(dataList)
+        setHistoryList(dataList)
+        drawStatisticChart(dataList, pref)
+    }
+
+    private fun testMapper(pref: SharedPreferences) {
+        val edit = pref.edit()
+        for(i in 1 until 10 step 2) {
+            edit.putString(MAPPER_PREFIX + "테스트$i", "테스트" + (i+1))
+        }
+        edit.commit()
+    }
+
+    fun setTotalValues(dataList: List<NotificationAnalyzeResult>) {
         val incomeTotal = dataList.filter { it.type == DEPOSIT }.sumBy { it.value!! }
         val spendingTotal = dataList.filter { it.type == WITHDRAW }.sumBy { it.value!! }
 
         binding.totalIncomeValue.text = decimalFormat.format(incomeTotal)
         binding.totalSpendingValue.text = decimalFormat.format(spendingTotal)
+    }
 
-        val adapter = HistoryViewAdapter(dataList)
-        binding.historyList.adapter = adapter
-        println("wow: " + dataList.groupBy { pref.getString(MAPPER_PREFIX + it.from, it.from) })
+    private fun setHistoryList(dataList: List<NotificationAnalyzeResult>) {
+        binding.historyList.apply {
+            adapter = HistoryViewAdapter(dataList)
+            emptyView = binding.emptyView
+        }
+    }
+
+    private fun drawStatisticChart(dataList: List<NotificationAnalyzeResult>, pref: SharedPreferences) {
         val chartData = dataList.filter{it.type == WITHDRAW}.groupBy{pref.getString(MAPPER_PREFIX + it.from, it.from)}.map {
             PieEntry(it.value.sumBy{ s -> s.value!! }.toFloat(), it.key)
         }.sortedBy { it.value }
         val spendingTop = chartData.slice(0..4).toMutableList()
-        val etc = chartData.slice(5 until chartData.size).sumBy{ it.value.toInt() }
-        spendingTop.add(PieEntry(etc.toFloat(), "기타"))
-        val colorItems = ArrayList<Int>()
-        listOf(VORDIPLOM_COLORS, JOYFUL_COLORS, COLORFUL_COLORS, LIBERTY_COLORS, PASTEL_COLORS).forEach{ arr ->
-            arr.forEach { colorItems.add(it) }
-        }
+//        val etc = chartData.slice(5 until chartData.size).sumBy{ it.value.toInt() }
+//        spendingTop.add(PieEntry(etc.toFloat(), "기타"))
         val pieData = PieData(PieDataSet(spendingTop, "").apply {
-            colors = listOf(Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE, Color.MAGENTA)
+            colors = VORDIPLOM_COLORS.toList().shuffled()
             valueTextColor = ContextCompat.getColor(this@MainScreenActivity, R.color.main)
             valueTextSize = 16f
         })
@@ -85,17 +97,12 @@ class MainScreenActivity : AppCompatActivity() {
             data = pieData
             description.isEnabled = false
             isRotationEnabled = false
+            legend.isEnabled = false
             setHoleColor(Color.TRANSPARENT)
             setEntryLabelColor(Color.BLACK)
-            animateY(1400, EaseInOutBack)
+            animateY(700, EaseInOutBack)
             animate()
         }
-    }
-
-    override fun onBackPressed() {
-        moveTaskToBack(true)
-        finishAndRemoveTask()
-        Process.killProcess(Process.myPid())
     }
 
     inner class HistoryViewAdapter(private val list: List<NotificationAnalyzeResult>): BaseAdapter() {

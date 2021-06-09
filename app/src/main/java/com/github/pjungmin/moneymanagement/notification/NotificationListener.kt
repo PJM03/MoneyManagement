@@ -33,6 +33,10 @@ class NotificationListener : NotificationListenerService() {
                 )
             }
         }
+//        testData()
+    }
+
+    fun testData() {
         val pref = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
         val editor = pref.edit()
         val data = pref.getStringSet(DATA_KEY, LinkedHashSet<String>())
